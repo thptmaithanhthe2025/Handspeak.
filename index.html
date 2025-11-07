@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark" style="--fs:16px">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HANDSPEAK</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0f1115">
+<style>
+  :root{ --bg:#0f1115; --panel:#151923; --ink:#e6e9ef; --muted:#9aa5b1; --acc:#36d399; --ring:#2c3342; --danger:#ff6b6b; --panel-2:#0a121c; }
+  [data-theme="light"]{ --bg:#f6f8fb; --panel:#ffffff; --ink:#0b1220; --muted:#576072; --acc:#0fb981; --ring:#d9e1ee; --danger:#e35050; --panel-2:#eef3fb; }
+  [data-theme="hc"]{ --bg:#000; --panel:#000; --panel-2:#000; --ink:#fff; --muted:#ddd; --acc:#ff0; --ring:#fff; }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs)}
+  a{color:var(--acc);text-decoration:none}
+  main{max-width:1200px;margin:0 auto;padding:18px;display:flex;flex-direction:column;gap:18px}
+  header{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .brand{font-size:48px;font-style:italic;font-weight:900;letter-spacing:.2px;margin:4px 0 2px 0;text-align:center;
+         font-family:Georgia,'Times New Roman',serif;text-shadow:0 2px 10px rgba(0,0,0,.18)}
+  nav{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  nav button{background:#1d2330;border:1px solid var(--ring);color:var(--ink);padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+  [data-theme="light"] nav button{background:#eef3fb}
+  nav button.active{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+  .panel{background:var(--panel);border:1px solid var(--ring);border-radius:12px;padding:16px}
+  h2{margin:0 0 8px 0}
+  .hint{color:var(--muted);font-size:.9em}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .row.stretch>*{flex:1 1 auto}
+  .ctrl,select,input,button{background:#1d2330;border:1px solid var(--ring);color:var(--ink);padding:8px 12px;border-radius:8px}
+  [data-theme="light"] select,[data-theme="light"] input,[data-theme="light"] button{background:#eef3fb}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:980px){.two{grid-template-columns:1fr}}
+  .switch{position:relative;display:inline-block;width:44px;height:24px}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#394050;transition:.2s;border-radius:999px}
+  .slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;top:3px;background:#fff;transition:.2s;border-radius:50%}
+  .switch input:checked + .slider{background:var(--acc)} .switch input:checked + .slider:before{transform:translateX(20px)}
+  #stage{position:relative;width:min(96vw,960px);aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;
+         box-shadow:0 0 0 1px var(--ring) inset;margin:10px auto}
+  #stage video,#stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  #banner{position:absolute;left:12px;top:12px;padding:8px 12px;background:rgba(0,0,0,.6);border-radius:10px;color:#fff;font-weight:700}
+  #faceTag{position:absolute;right:12px;top:12px;padding:8px 12px;background:rgba(0,0,0,.6);border-radius:10px;color:#fff;font-weight:700}
+  #caption{margin-top:8px;padding:8px 12px;border-radius:10px;border:1px solid var(--ring);background:var(--panel-2);font-weight:700;min-height:44px}
+  .primary{background:var(--acc);color:#0b1712;border-color:#2b8d6b}
+  .danger{background:var(--danger);color:#200;border-color:#c94141}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:10px}
+  .cell{border:1px solid var(--ring);border-radius:10px;padding:16px;text-align:center;background:#101521;font-size:20px;font-weight:800;cursor:pointer;user-select:none}
+  [data-theme="light"] .cell{background:#fff}
+  .log{border:1px solid var(--ring);background:#0a121c;color:var(--ink);border-radius:10px;padding:10px;height:180px;overflow:auto}
+  [data-theme="light"] .log{background:#eef3fb}
+  footer{margin:10px auto 24px;text-align:center;color:var(--muted)}
+  .cookie{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--ring);padding:12px;display:none;z-index:999}
+  .cookie .inner{max-width:1200px;margin:0 auto;display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .range-row{display:flex;align-items:center;gap:4px}
+  .range-row .range{flex:1 1 auto;width:100%}
+  .range-row .val{min-width:44px;text-align:right}
+  #controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+  #controls input[type=range]#vol{flex:1 1 260px;width:100%}
+  input[type=range].fillrange{-webkit-appearance:none;appearance:none;background:transparent;height:18px;cursor:pointer;border:none;padding:0;margin:0}
+  input[type=range].fillrange::-webkit-slider-runnable-track{height:8px;border-radius:999px;background:linear-gradient(var(--acc),var(--acc)) 0/ var(--p,0%) 100% no-repeat, #2b3344;border:1px solid var(--ring)}
+  [data-theme="light"] input[type=range].fillrange::-webkit-slider-runnable-track{background:linear-gradient(var(--acc),var(--acc)) 0/ var(--p,0%) 100% no-repeat, #dfe7f5}
+  input[type=range].fillrange::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid rgba(0,0,0,.2);margin-top:-5px;box-shadow:0 0 0 2px rgba(0,0,0,.06)}
+  input[type=range].fillrange::-moz-range-track{height:8px;border-radius:999px;background:#2b3344;border:1px solid var(--ring)}
+  [data-theme="light"] input[type=range].fillrange::-moz-range-track{background:#dfe7f5}
+  input[type=range].fillrange::-moz-range-progress{height:8px;border-radius:999px;background:var(--acc);border:1px solid var(--ring)}
+  input[type=range].fillrange::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid rgba(0,0,0,.2)}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.min.js"></script>
+</head>
+<body>
+<main>
+  <header>
+    <h1 class="brand">Handspeak</h1>
+    <div class="row stretch" id="topbar">
+      <label class="ctrl" style="min-width:240px"><span id="t_lang">Ngôn ngữ</span> /
+        <select id="lang"><option value="vi" selected>Tiếng Việt</option><option value="en">English</option></select>
+      </label>
+      <label class="ctrl" style="min-width:220px"><span id="t_theme">Chủ đề</span>:
+        <select id="theme">
+          <option value="normal" selected>Bình thường</option><option value="light">Sáng</option>
+          <option value="dark">Tối</option><option value="hc">Tương phản cao</option>
+        </select>
+      </label>
+      <label class="ctrl" style="flex:2 1 380px">
+        <div class="range-row">
+          <span id="t_font">Cỡ chữ</span>: <input id="fontStep" class="range fillrange" type="range" min="12" max="28" value="16" />
+          <span id="fontVal" class="val">16px</span>
+        </div>
+      </label>
+    </div>
+    <nav>
+      <button data-tab="intro" class="active" id="tabBtnIntro">Giới thiệu</button>
+      <button data-tab="learn" id="tabBtnLearn">Học & Tra cứu</button>
+      <button data-tab="practice" id="tabBtnPractice">Thực hành</button>
+      <button data-tab="impact" id="tabBtnImpact">Ý nghĩa</button>
+      <button data-tab="contact" id="tabBtnContact">Liên hệ</button>
+    </nav>
+  </header>
+
+  <section class="panel" id="tab-intro">
+    <div class="two">
+      <div>
+        <h2 id="t_intro_h">1) Giới thiệu</h2>
+        <p id="t_intro_p"><b>Handspeak</b> là một dự án cộng đồng nhằm hỗ trợ những người khiếm thính có thể giao tiếp với người bình thường và giúp mọi người hiểu hơn về ngôn ngữ ký hiệu.</p>
+        <ul id="t_intro_list">
+          <li>Chuyển động, phát hiện cử chỉ theo thời gian thực.</li>
+          <li>Phân loại các cử chỉ: 👋 <b>Xin chào</b>, ✋ <b>Dừng lại</b>, 👍 <b>Làm tốt lắm</b>, 👌 <b>OK</b>, ✌️ <b>Tuyệt vời</b>, 👉 <b>Ở kia</b>, 🤟 <b>Tôi yêu bạn</b> và các chữ cái cùng số.</li>
+          <li>Hỗ trợ ngôn ngữ <b>Tiếng Việt</b> và <b>Tiếng Anh</b>.</li>
+        </ul>
+        <p class="hint" id="streakHint">*Cookie chỉ dùng để ghi nhớ ngày bạn mở ứng dụng nhằm phục vụ chế độ luyện tập (không gửi dữ liệu lên máy chủ). Bạn có thể từ chối bất kỳ lúc nào.</p>
+      </div>
+      <div>
+        <h3 style="text-align:center" id="t_board_title">Bảng ngôn ngữ ký hiệu</h3>
+        <img style="width:100%;height:auto;border-radius:10px;border:1px solid var(--ring)"
+          alt="Bảng ngôn ngữ ký hiệu"
+          src="https://scontent.fvca1-1.fna.fbcdn.net/v/t39.30808-6/574114834_1902049910353589_3865006877574798160_n.jpg?stp=dst-jpg_s640x640_tt6&_nc_cat=106&ccb=1-7&_nc_sid=127cfc&_nc_ohc=AKgDu65eaKMQ7kNvwEoimVz&_nc_oc=AdnMQVqF26ysbaMFQS6RVCeQxtCT2J77aorM7fHt2I1GLsD_u7snmOWSAGZM7k7L5Kw&_nc_zt=23&_nc_ht=scontent.fvca1-1.fna&_nc_gid=DyDtYslkznwvgrqXhW4asQ&oh=00_AfiZEG8_GC22J5GkH15sHnDwp22JLABDwxvWOIYxOCvTGw&oe=691281E2" />
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="tab-learn" hidden>
+    <h2 id="t_learn_h">2) Học & Tra cứu</h2>
+    <p class="hint" id="t_learn_hint">Bấm vào ô để nghe phát âm ký tự theo ngôn ngữ/giọng hiện tại.</p>
+    <div class="grid" id="alphaGrid"></div>
+  </section>
+
+  <section class="panel" id="tab-practice" hidden>
+    <h2 id="t_practice_h">3) Thực hành với camera</h2>
+    <div id="stage">
+      <video id="video" class="input_video" autoplay playsinline muted></video>
+      <canvas id="canvas" class="output_canvas"></canvas>
+      <div id="banner">Chưa bật camera</div>
+      <div id="faceTag" aria-live="polite">🙂</div>
+    </div>
+    <div id="caption" aria-live="polite">…</div>
+
+    <div class="row" id="controls">
+      <button id="startCam" class="primary">Bật camera</button>
+      <button id="stopCam">Tắt camera</button>
+      <button id="quickHelp">Hướng dẫn nhanh</button>
+
+      <label class="switch">
+        <input type="checkbox" id="toggle-audio" checked /><span class="slider"></span>
+      </label><span id="t_audio">Bật âm thanh</span>
+
+      <button id="vol-dec">−</button>
+      <input type="range" id="vol" class="range fillrange" min="0" max="1" step="0.05" value="1">
+      <button id="vol-inc">+</button>
+      <span id="vol-val" class="val">100%</span>
+
+      <button id="btn-test-voice">Test tiếng nói</button>
+      <button id="btn-reset">Reset chuyển động</button>
+      <button id="btn-download-log">Tải log CSV</button>
+
+      <input id="tutorSeq" class="ctrl" style="min-width:240px" placeholder="Nhập chuỗi ký tự (ví dụ: HELLO)" />
+      <button id="tutorStart">Bắt đầu hướng dẫn</button>
+
+      <button id="recStart">Ghi hình</button>
+      <button id="recStop" class="danger">Dừng & Tải video</button>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <div class="row">
+        <label class="ctrl"><span id="t_voice_choose">Chọn giọng</span>:
+          <select id="voice-name"><option>Đang tải…</option></select>
+        </label>
+        <button id="btn-refresh-voices">Tải lại giọng</button>
+        <span class="hint" id="t_voice_hint">*Ưu tiên giọng nữ tiếng Việt nếu có trên thiết bị.</span>
+      </div>
+      <div class="row">
+        <input id="ttsText" class="ctrl" style="min-width:320px" value="Xin chào! Đây là kiểm tra tiếng nói.">
+        <button id="sayNow">Đọc thử</button>
+        <button id="stopSay">Dừng</button>
+      </div>
+    </div>
+
+    <div class="log" id="liveLog" aria-live="polite"></div>
+  </section>
+
+  <section class="panel" id="tab-impact" hidden>
+    <h2 id="t_impact_h">4) Ý nghĩa & tác động</h2>
+    <ul id="t_impact_list">
+      <li>Thiết kế tiếp cận (tương phản cao, cỡ chữ, phụ đề).</li>
+      <li>Giảm rào cản ký hiệu → lời nói.</li>
+      <li>Xử lý trên thiết bị; không gửi máy chủ.</li>
+    </ul>
+  </section>
+
+  <section class="panel" id="tab-contact" hidden>
+    <h2 id="t_contact_h">5) Liên hệ</h2>
+    <div class="grid">
+      <div class="cell">
+        <h3>📧 Gmail</h3>
+        <a href="mailto:thptmaithanhthe2025@gmail.com">thptmaithanhthe2025@gmail.com</a>
+      </div>
+      <div class="cell">
+        <h3>📝 Góp ý</h3>
+        <a target="_blank" rel="noopener" href="https://forms.gle/2xaCbZrDmuqT2B587">Google Form</a>
+      </div>
+      <div class="cell">
+        <h3>📞 Điện thoại</h3>
+        <div><a href="tel:0943900802">0943900802</a> (Minh Sịn)</div>
+        <div><a href="tel:0353143116">0353143116</a> (Minh Huy)</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>© <span id="t_copyright">Bản quyền thuộc về</span>: <b>MHS</b> ®</footer>
+
+<div class="cookie" id="cookieBar" role="dialog" aria-live="polite">
+  <div class="inner">
+    <div id="t_cookie_msg"><b>Chấp nhận Cookie?</b> Dùng localStorage để ghi nhớ ngày luyện tập. Không gửi dữ liệu lên máy chủ.</div>
+    <div class="row">
+      <button id="cookieAccept" class="primary">Accept</button>
+      <button id="cookieDecline">Decline</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const I18N={vi:{tabs:['Giới thiệu','Học & Tra cứu','Thực hành','Ý nghĩa','Liên hệ'],lang:'Ngôn ngữ',theme:'Chủ đề',font:'Cỡ chữ',intro_h:'1) Giới thiệu',intro_p:'<b>Handspeak</b> là một dự án cộng đồng nhằm hỗ trợ những người khiếm thính có thể giao tiếp với người bình thường và giúp mọi người hiểu hơn về ngôn ngữ ký hiệu.',intro_list:['Chuyển động, phát hiện cử chỉ theo thời gian thực.','Phân loại các cử chỉ: 👋 <b>Xin chào</b>, ✋ <b>Dừng lại</b>, 👍 <b>Làm tốt lắm</b>, 👌 <b>OK</b>, ✌️ <b>Tuyệt vời</b>, 👉 <b>Ở kia</b>, 🤟 <b>Tôi yêu bạn</b> và các chữ cái cùng số.','Hỗ trợ ngôn ngữ <b>Tiếng Việt</b> và <b>Tiếng Anh</b>.'],board:'Bảng ngôn ngữ ký hiệu',learn_h:'2) Học & Tra cứu',learn_hint:'Bấm vào ô để nghe phát âm ký tự theo ngôn ngữ/giọng hiện tại.',practice_h:'3) Thực hành với camera',audio:'Bật âm thanh',quick:'Hướng dẫn nhanh',voice_choose:'Chọn giọng',voice_hint:'*Ưu tiên giọng nữ tiếng Việt nếu có trên thiết bị.',impact_h:'4) Ý nghĩa & tác động',copyright:'Bản quyền thuộc về',placeholders:{tutor:'Nhập chuỗi ký tự (ví dụ: HELLO)',tts:'Xin chào! Đây là kiểm tra tiếng nói.'},cookie:'<b>Chấp nhận Cookie?</b> Dùng localStorage để ghi nhớ ngày luyện tập. Không gửi dữ liệu.'},en:{tabs:['Intro','Learn','Practice','Impact','Contact'],lang:'Language',theme:'Theme',font:'Font size',intro_h:'1) Introduction',intro_p:'<b>Handspeak</b> helps Deaf/HoH users communicate with hearing people and raises awareness of sign language.',intro_list:['Real-time motion & gesture detection.','Classifies: 👋 <b>Hello</b>, ✋ <b>Stop</b>, 👍 <b>Great job</b>, 👌 <b>OK</b>, ✌️ <b>Awesome</b>, 👉 <b>Over there</b>, 🤟 <b>I love you</b>, plus letters & digits.','Supports <b>Vietnamese</b> and <b>English</b>.'],board:'Sign language chart',learn_h:'2) Learn & Reference',learn_hint:'Tap a tile to hear its pronunciation with current language/voice.',practice_h:'3) Practice with camera',audio:'Enable audio',quick:'Quick guide',voice_choose:'Choose voice',voice_hint:'*Prefers Vietnamese female voices if available.',impact_h:'4) Impact',copyright:'Copyright',placeholders:{tutor:'Enter a sequence (e.g., HELLO)',tts:'Hello! This is a voice test.'},cookie:'<b>Accept Cookies?</b> We store practice days locally. No server data.'}};
+function $(id){return document.getElementById(id)};function setHTML(el,html){el.innerHTML=html}
+const tabs={intro:'tab-intro',learn:'tab-learn',practice:'tab-practice',impact:'tab-impact',contact:'tab-contact'};
+document.querySelectorAll('nav button').forEach(btn=>{btn.onclick=()=>{document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b===btn));const k=btn.dataset.tab;for(const x in tabs)$(tabs[x]).hidden=(x!==k);};});
+function setTheme(v){if(v==='light')document.documentElement.setAttribute('data-theme','light');else if(v==='dark')document.documentElement.setAttribute('data-theme','dark');else if(v==='hc')document.documentElement.setAttribute('data-theme','hc');else{const p=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',p);}}
+$('theme').onchange=e=>{setTheme(e.target.value); if(getConsent()) localStorage.setItem('hs_theme',e.target.value);} ;(function(){const t=localStorage.getItem('hs_theme')||'normal';$('theme').value=t;setTheme(t);})();
+$('fontStep').oninput=e=>{document.documentElement.style.setProperty('--fs',e.target.value+'px');$('fontVal').textContent=e.target.value+'px';if(getConsent()) localStorage.setItem('hs_fs',e.target.value);};(function(){const v=localStorage.getItem('hs_fs')||'16';$('fontStep').value=v;$('fontVal').textContent=v+'px';document.documentElement.style.setProperty('--fs',v+'px');})();
+function getConsent(){return localStorage.getItem('hs_consent')==='yes'}
+function showCookie(){if(!getConsent()&&!localStorage.getItem('hs_consent_denied'))$('cookieBar').style.display='block'}
+$('cookieAccept').onclick=()=>{localStorage.setItem('hs_consent','yes');$('cookieBar').style.display='none';touchPracticeDay();}
+$('cookieDecline').onclick=()=>{localStorage.setItem('hs_consent_denied','1');$('cookieBar').style.display='none';}
+function touchPracticeDay(){ if(!getConsent()) return; const k='hs_days'; const d=(new Date()).toISOString().slice(0,10); let days=new Set(JSON.parse(localStorage.getItem(k)||'[]')); days.add(d); localStorage.setItem(k,JSON.stringify([...days])); }
+showCookie();
+function applyI18N(lang){const t=I18N[lang];$('tabBtnIntro').textContent=t.tabs[0];$('tabBtnLearn').textContent=t.tabs[1];$('tabBtnPractice').textContent=t.tabs[2];$('tabBtnImpact').textContent=t.tabs[3];$('tabBtnContact').textContent=t.tabs[4];setHTML($('t_lang'),t.lang);setHTML($('t_theme'),t.theme);setHTML($('t_font'),t.font);setHTML($('t_intro_h'),t.intro_h);setHTML($('t_intro_p'),t.intro_p);setHTML($('t_board_title'),t.board);setHTML($('t_learn_h'),t.learn_h);$('t_learn_hint').textContent=t.learn_hint;setHTML($('t_practice_h'),t.practice_h);$('t_audio').textContent=t.audio;$('quickHelp').textContent=t.quick;setHTML($('t_voice_choose'),t.voice_choose);$('t_voice_hint').textContent=t.voice_hint||'';setHTML($('t_impact_h'),t.impact_h);setHTML($('t_copyright'),t.copyright);$('tutorSeq').placeholder=t.placeholders.tutor;$('ttsText').value=t.placeholders.tts;const lis=t.intro_list.map(x=>`<li>${x}</li>`).join("");setHTML($('t_intro_list'),lis);setHTML($('t_cookie_msg'),t.cookie);}
+$('lang').onchange=()=>{applyI18N($('lang').value);listVoices();};applyI18N('vi');
+function fillAlphaGrid(){const a='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');const d='0123456789'.split('');const g=$('alphaGrid');g.innerHTML='';[...a,...d].forEach(ch=>{const e=document.createElement('div');e.className='cell';e.textContent=ch;e.onclick=()=>speak(ch,true);g.appendChild(e);});} ;fillAlphaGrid();
+function bindFillRange(el){if(!el)return;const setP=()=>{const min=+el.min||0,max=+el.max||100,val=+el.value||0;el.style.setProperty('--p',((val-min)*100/(max-min))+'%');};el.addEventListener('input',setP);setP();} ;bindFillRange($('fontStep'));
+let currentVolume=1.0, __voices=[], __selectedVoice=null;
+function setVol(v){currentVolume=Math.max(0,Math.min(1,parseFloat(v)||1));$('vol').value=currentVolume;$('vol-val').textContent=Math.round(currentVolume*100)+'%';}
+$('vol').addEventListener('input',e=>setVol(e.target.value));$('vol-dec').onclick=()=>setVol(currentVolume-0.1);$('vol-inc').onclick=()=>setVol(currentVolume+0.1);
+$('btn-test-voice').onclick=()=>speak($('lang').value==='en'?'This is a voice test.':'Đây là kiểm tra tiếng nói.');$('sayNow').onclick=()=>speak($('ttsText').value||'');$('stopSay').onclick=()=>speechSynthesis.cancel();
+function preferFemaleVi(list){const keys=['female','nu','vi'];for(const k of keys){const f=list.find(v=>(v.name||'').toLowerCase().includes(k));if(f)return f;}return list[0];}
+function listVoices(){__voices=speechSynthesis.getVoices()||[];const lang=$('lang').value;const fl=__voices.filter(v=>(v.lang||'').toLowerCase().startsWith(lang)).sort((a,b)=>(a.name||'').localeCompare(b.name||''));const sel=$('voice-name');sel.innerHTML='';if(fl.length===0){const o=document.createElement('option');o.textContent=(lang==='en'?'No voices':'Không có giọng');sel.appendChild(o);__selectedVoice=null;return;}fl.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=v.name+' — '+v.lang+(v.default?' (default)':'');sel.appendChild(o);});__selectedVoice=(lang==='vi')?preferFemaleVi(fl):fl[0];if(__selectedVoice)sel.value=__selectedVoice.name;}
+speechSynthesis.onvoiceschanged=listVoices;window.addEventListener('DOMContentLoaded',listVoices);$('btn-refresh-voices').onclick=listVoices;$('voice-name').onchange=e=>{__selectedVoice=__voices.find(v=>v.name===e.target.value)||null;};
+function speak(text,force){if(!$('toggle-audio').checked&&!force)return;try{const u=new SpeechSynthesisUtterance(text);u.lang=($('lang').value==='en'?'en-US':'vi-VN');if(__selectedVoice)u.voice=__selectedVoice;u.volume=currentVolume;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}}
+const videoEl=$('video'),canvasEl=$('canvas');const bannerEl=$('banner'),captionEl=$('caption'),faceTag=$('faceTag');function banner(t){bannerEl.textContent=t}
+const centroidHist=[];let WAVE_HIST=20,WAVE_AMP_MIN=0.08,WAVE_SIGN_CHANGES_MIN=5,STOP_STABLE_AMP=0.02;
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}function palmRef(lm){return dist(lm[0],lm[9])+1e-6}
+function fingersUp(lm,handed){const tt=lm[4],ti=lm[3],i8=lm[8],i6=lm[6],m12=lm[12],m10=lm[10],r16=lm[16],r14=lm[14],p20=lm[20],p18=lm[18];
+const idx=i8.y<i6.y, mid=m12.y<m10.y, ring=r16.y<r14.y, pky=p20.y<p18.y; let th; if(handed==='Right') th=tt.x<ti.x; else if(handed==='Left') th=tt.x>ti.x; else th=tt.y<lm[2].y; return [th,idx,mid,ring,pky];}
+function isOK(lm){return dist(lm[4],lm[8])/palmRef(lm)<0.45}function isVictory(up,lm){return(up[1]&&up[2]&&!up[3]&&!up[4])&&(dist(lm[8],lm[12])/palmRef(lm)>0.12)}
+function isOpenPalm(up){return up.filter(Boolean).length>=4}function isThumbsUp(up,lm){return up[0]&&(up.slice(1).filter(Boolean).length<=1)&&(lm[4].y<lm[0].y)}
+function isFist(up){return up.filter(Boolean).length===0}function isPoint(up){return up[1]&&!up[0]&&!up[2]&&!up[3]&&!up[4]}
+function isShaka(up){return up[0]&&up[4]&&!up[1]&&!up[2]&&!up[3]}function isILY(up){return up[0]&&up[1]&&!up[2]&&!up[3]&&up[4]}
+function updateMotion(lm){const cx=lm.reduce((a,p)=>a+p.x,0)/lm.length;centroidHist.push(cx);if(centroidHist.length>WAVE_HIST)centroidHist.shift();}
+function waveAmplitude(a){if(a.length<2)return 0;return Math.max(...a)-Math.min(...a)}
+function isWaving(){if(centroidHist.length<8)return false;const d=[];for(let i=1;i<centroidHist.length;i++)d.push(centroidHist[i]-centroidHist[i-1]);for(let i=0;i<d.length;i++)if(Math.abs(d[i])<0.004)d[i]=0;let c=0;for(let i=1;i<d.length;i++)if(Math.sign(d[i])!==Math.sign(d[i-1]))c++;return waveAmplitude(centroidHist)>=WAVE_AMP_MIN&&c>=WAVE_SIGN_CHANGES_MIN;}
+function isStableOpenPalm(){return waveAmplitude(centroidHist)<STOP_STABLE_AMP}
+const PHRASE={vi:{WAVE:"Xin chào!",OPEN_PALM:"Chào bạn!",STOP:"Dừng lại!",THUMBS_UP:"Làm tốt lắm!",OK:"OK!",VICTORY:"Tuyệt vời!",FIST:"Xin lỗi!",POINT:"Ở kia!",SHAKA:"Kết nối nhé!",ILY:"Tôi yêu bạn!"},en:{WAVE:"Hello!",OPEN_PALM:"Hi there!",STOP:"Stop!",THUMBS_UP:"Great job!",OK:"OK!",VICTORY:"Awesome!",FIST:"Sorry!",POINT:"Over there!",SHAKA:"Stay connected!",ILY:"I love you!"}};
+let lastPhrase=null,lastTime=0,smootherBuf=[],SMOOTHER_K=5,SMOOTHER_REQUIRED=3,COOLDOWN_SEC=1.5;const eventLog=[];const liveLog=$('liveLog');function logLine(s){const p=document.createElement('div');p.textContent=s;liveLog.appendChild(p);liveLog.scrollTop=liveLog.scrollHeight;}
+function onHands(res){const img=res.image;const W=canvasEl.width=img.width,H=canvasEl.height=img.height;const ctx=canvasEl.getContext('2d');ctx.clearRect(0,0,W,H);ctx.drawImage(img,0,0,W,H);let phraseToSay=null,lastLabel=null;
+if(res.multiHandLandmarks&&res.multiHandLandmarks.length){for(let i=0;i<res.multiHandLandmarks.length;i++){const lm=res.multiHandLandmarks[i];const handed=(res.multiHandedness&&res.multiHandedness[i]&&res.multiHandedness[i].label)||"Unknown";
+drawConnectors(ctx,lm,HAND_CONNECTIONS,{color:'#00FF88',lineWidth:3});drawLandmarks(ctx,lm,{color:'#FFFFFF',lineWidth:1});updateMotion(lm);
+const up=fingersUp(lm,handed);let label=null;if(isOK(lm))label="OK";else if(isOpenPalm(up)&&isWaving())label="WAVE";else if(isOpenPalm(up)&&isStableOpenPalm())label="STOP";else if(isThumbsUp(up,lm))label="THUMBS_UP";else if(isOpenPalm(up))label="OPEN_PALM";else if(isVictory(up,lm))label="VICTORY";else if(isFist(up))label="FIST";else if(isPoint(up))label="POINT";else if(isShaka(up))label="SHAKA";else if(isILY(up))label="ILY";
+smootherBuf.push(label);if(smootherBuf.length>SMOOTHER_K)smootherBuf.shift();let stable=null;if(label){const cnt=smootherBuf.filter(x=>x===label).length;if(cnt>=SMOOTHER_REQUIRED)stable=label;}
+if(stable){const lang=$('lang').value||'vi';const phrase=PHRASE[lang][stable]||stable;const now=performance.now()/1000;if(phrase!==lastPhrase||(now-lastTime)>COOLDOWN_SEC){phraseToSay=phrase;lastPhrase=phrase;lastTime=now;lastLabel=stable;}}}}
+if(phraseToSay){banner(phraseToSay);speak(phraseToSay);touchPracticeDay();const ts=new Date().toLocaleTimeString();eventLog.push([new Date().toISOString(),lastLabel||'',phraseToSay]);logLine(`[${ts}] ${lastLabel||'—'}: ${phraseToSay}`);captionEl.textContent=phraseToSay;}}
+function mouthSmileScore(l){const L=l[61],R=l[291],T=l[13],B=l[14];const w=Math.hypot(L.x-R.x,L.y-R.y);const h=Math.hypot(T.x-B.x,T.y-B.y)+1e-6;return w/h;}
+function mouthSadScore(l){const L=l[61],R=l[291],M=l[0];return((L.y+R.y)/2)-M.y;}
+let faceMesh=null;function onFace(r){if(!r.multiFaceLandmarks||!r.multiFaceLandmarks.length){faceTag.textContent='🙂';return;}const l=r.multiFaceLandmarks[0];const s=mouthSmileScore(l),d=mouthSadScore(l);if(s>2.0){faceTag.textContent='😊 Vui';}else if(d>0.015){faceTag.textContent='☹️ Buồn';}else faceTag.textContent='🙂';}
+let cam=null,stream=null,micStream=null,hands=null;
+async function startCamera(){try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){banner('Trình duyệt không hỗ trợ camera.');return;}if(!isSecureContext){banner('Cần HTTPS hoặc localhost để cấp quyền.');return;}
+banner('Xin quyền camera & micro…');stream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720}},audio:false});micStream=await navigator.mediaDevices.getUserMedia({audio:true});videoEl.srcObject=stream;
+hands=new Hands({locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});hands.setOptions({maxNumHands:2,modelComplexity:1,minDetectionConfidence:0.7,minTrackingConfidence:0.5});hands.onResults(onHands);
+faceMesh=new FaceMesh({locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});faceMesh.setOptions({maxNumFaces:1,refineLandmarks:true,minDetectionConfidence:0.5,minTrackingConfidence:0.5});faceMesh.onResults(onFace);
+cam=new Camera(videoEl,{onFrame:async()=>{await hands.send({image:videoEl});await faceMesh.send({image:videoEl});},width:1280,height:720});await cam.start();banner('Sẵn sàng — giơ tay để thử 👋');}catch(e){console.error(e);banner('Không mở được: '+(e&&e.name?e.name:''));}}
+function stopCamera(){try{if(cam&&cam.stop)cam.stop();[stream,micStream].forEach(s=>{if(s){s.getTracks().forEach(t=>t.stop());}});videoEl.srcObject=null;banner('Đã tắt camera.');}catch{}}
+$('startCam').onclick=startCamera; $('stopCam').onclick=stopCamera; $('btn-reset').onclick=()=>{centroidHist.length=0;banner('Đã reset chuyển động');};
+$('btn-download-log').onclick=()=>{if(eventLog.length===0){banner($('lang').value==='en'?'No data':'Chưa có dữ liệu');return;}const rows=[['timestamp','label','text'],...eventLog];const csv=rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='handspeak_log.csv';a.click();URL.revokeObjectURL(url);};
+$('tutorStart').onclick=()=>{const s=($('tutorSeq').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(!s){alert($('lang').value==='en'?'Enter letters/numbers':'Nhập chuỗi chữ/số');return;}const lang=$('lang').value;let i=0;(function step(){if(i>=s.length)return;const ch=s[i];captionEl.textContent=(lang==='en'?'Show sign for':'Thực hiện ký hiệu')+': '+ch;speak((lang==='en'?'Show sign for':'Thực hiện ký hiệu')+': '+ch,true);i++;setTimeout(step,2200);})();};
+let rec=null,recChunks=[],recMime='';function pickMime(){const c=['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];for(const k of c){if(window.MediaRecorder&&MediaRecorder.isTypeSupported(k))return k;}return'';}
+$('recStart').onclick=()=>{try{const s=canvasEl.captureStream(30);if(micStream){const a=micStream.getAudioTracks()[0];if(a)s.addTrack(a);}recMime=pickMime();rec=new MediaRecorder(s,recMime?{mimeType:recMime}:undefined);rec.ondataavailable=e=>{if(e.data&&e.data.size)recChunks.push(e.data);};rec.onstop=()=>{const blob=new Blob(recChunks,{type:recMime||'video/webm'});const useMp4=(recMime&&recMime.includes('mp4'));const fname='handspeak_recording.'+(useMp4?'mp4':'webm');const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=fname;a.click();setTimeout(()=>URL.revokeObjectURL(url),20000);recChunks=[];};rec.start();banner($('lang').value==='en'?'Recording…':'Đang ghi hình…');}catch(e){banner($('lang').value==='en'?'Recording not supported':'Trình duyệt không hỗ trợ ghi hình');}};
+$('recStop').onclick=()=>{try{if(rec&&rec.state!=='inactive'){rec.stop();banner($('lang').value==='en'?'Saved video':'Đã lưu video');}}catch(e){} };
+$('quickHelp').onclick=()=>{const vi="- Nền tương phản, tay trọn khung.\n- Giữ cử chỉ ~1 giây.\n- Vẫy tay qua lại rõ để nhận 'Xin chào'.\n- Bật micro để video có tiếng.";const en="- High contrast background.\n- Keep full hand in frame.\n- Wave left↔right for 'Hello'.\n- Enable mic so the recording has audio.";alert($('lang').value==='en'?en:vi);};
+function bindFillRange(el){if(!el)return;const setP=()=>{const min=+el.min||0,max=+el.max||100,val=+el.value||0;el.style.setProperty('--p',((val-min)*100/(max-min))+'%');};el.addEventListener('input',setP);setP();}
+bindFillRange(document.getElementById('vol'));
+$('lang').addEventListener('change',()=>{applyI18N($('lang').value);listVoices();});
+</script>
+</body>
+</html>
